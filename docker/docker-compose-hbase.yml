@@ -1,0 +1,51 @@
+version: '3.8'
+
+# Bu dosya HBase ve Zookeeper servislerini tanımlar. Ödev ortamında HBase testi ve sorguları
+# çalıştırmak için kullanılacak konteynerleri başlatır.
+services:
+  zookeeper:
+    image: zookeeper:3.9
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper:2888:3888;2181
+    networks:
+      - bigdata-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  hbase:
+    image: dajobe/hbase:latest
+    container_name: hbase
+    hostname: hbase
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "16000:16000"  # HBase Master
+      - "16010:16010"  # HBase Master Web UI (web arayüzü için)
+      - "16020:16020"  # HBase RegionServer
+      - "16030:16030"  # HBase RegionServer Web UI (region server web arayüzü)
+      - "9090:9090"    # Thrift (istemci bağlantıları için)
+      - "8080:8080"    # REST (HTTP API erişimi için)
+    environment:
+      - HBASE_MANAGES_ZK=false
+    volumes:
+      - hbase_data:/data
+    networks:
+      - bigdata-network
+    restart: unless-stopped
+
+volumes:
+  hbase_data:
+
+networks:
+  bigdata-network:
+    # Dışa açık (external) ağ: bu, başka compose dosyalarıyla ortak kullanılacak önceden
+    # oluşturulmuş bir Docker ağı olduğunu gösterir. eğer bu ağ yoksa, `docker network create bigdata-network`
+    external: true

@@ -1,0 +1,31 @@
+# Core dependencies
+pyspark==3.5.0
+happybase==1.2.0
+pyarrow==14.0.1
+pandas==2.1.4
+numpy==1.26.2
+
+# Storage clients
+minio==7.2.0
+hdfs==2.7.0
+
+# Visualization
+streamlit==1.29.0
+plotly==5.18.0
+altair==5.2.0
+
+# Data processing
+python-dateutil==2.8.2
+pytz==2023.3
+
+# Utilities
+tqdm==4.66.1
+python-dotenv==1.0.0
+
+# Testing (bonus)
+pytest==7.4.3
+pytest-cov==4.1.0
+
+# Development
+black==23.12.1
+flake8==7.0.0

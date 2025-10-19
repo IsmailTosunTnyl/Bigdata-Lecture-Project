@@ -1,0 +1,28 @@
+# Geliştirme ortamı: Python, Java ve Spark desteği içerir
+FROM python:3.9
+
+# Java (JDK) ve bazı yardımcı araçları yükle
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    default-jdk \
+    procps \
+    vim \
+    curl \
+    wget && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# JAVA_HOME değişkenini ayarla (Spark/Java tabanlı araçlar için gereklidir)
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV PATH="$JAVA_HOME/bin:$PATH"
+
+# Python gereksinimlerini yükle
+WORKDIR /workspace
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Özel prompt: Her kabukta ortamı belirten renkli bir PS1
+RUN echo 'export PS1="\[\e[1;33m\][DEV-ORTAM]\[\e[0m\] \u@\h:\w# "' >> /etc/bash.bashrc
+
+# Varsayılan komut: interaktif bash kabuğu
+CMD ["/bin/bash"]

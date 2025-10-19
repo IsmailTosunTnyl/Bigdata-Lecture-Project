@@ -1,0 +1,71 @@
+version: '3.8'
+
+# Bu dosya HDFS (Namenode + Datanode) servislerini tanımlar. Ödev çalışmaları için HDFS'i
+# yerel bir Docker ortamında çalıştırmak için kullanılır.
+services:
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    environment:
+      - CLUSTER_NAME=test
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - HDFS_CONF_dfs_namenode_rpc-address=namenode:9000
+    ports:
+      - "9000:9000"
+      - "9870:9870"
+    volumes:
+      - namenode_data:/hadoop/dfs/name
+    networks:
+      - bigdata-network
+
+  datanode1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode1
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - HDFS_CONF_dfs_namenode_rpc-address=namenode:9000
+    ports:
+      - "9864:9864"
+    volumes:
+      - datanode1_data:/hadoop/dfs/data
+    networks:
+      - bigdata-network
+
+  # To add more datanodes, uncomment and modify the sections below:
+  # Daha fazla datanode eklemek isterseniz, aşağıdaki bölümleri yorumdan çıkarıp düzenleyin:
+  # datanode2:
+  #   image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+  #   container_name: datanode2
+  #   environment:
+  #     - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+  #     - HDFS_CONF_dfs_namenode_rpc-address=namenode:9000
+  #   ports:
+  #     - "9865:9864"
+  #   volumes:
+  #     - datanode2_data:/hadoop/dfs/data
+  #   networks:
+  #     - bigdata-network
+  #
+  # datanode3:
+  #   image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+  #   container_name: datanode3
+  #   environment:
+  #     - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+  #     - HDFS_CONF_dfs_namenode_rpc-address=namenode:9000
+  #   ports:
+  #     - "9866:9864"
+  #   volumes:
+  #     - datanode3_data:/hadoop/dfs/data
+  #   networks:
+  #     - bigdata-network
+
+volumes:
+  namenode_data:
+  datanode1_data:
+  # Yorumdan çıkarılan datanod'lar için ilgili volume tanımlarını da eklemeyi unutmayın:
+  # datanode2_data:
+  # datanode3_data:
+
+networks:
+  bigdata-network:
+    external: true

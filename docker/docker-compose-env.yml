@@ -1,0 +1,32 @@
+version: '3.8'
+# Bu dosya geliştirme ortamı için bir docker-compose tanımı içerir.
+# Proje ödevi sırasında kullanılacak `dev-env` konteynerini başlatmak için uygundur.
+services:
+  dev-env:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    image: bigdata-dev-env:latest
+    container_name: dev-env
+    user: root
+    working_dir: /workspace
+    volumes:
+      - ../:/workspace
+    ports:
+      - "8501:8501"  # Streamlit dashboard: yerel 8501 portunu konteynerin 8501 portuna yönlendirir.
+      # Eğer kendi makinenizde başka bir uygulama 8501 kullanıyorsa, burada farklı bir eşleme yapabilirsiniz (ör. "8601:8501").
+    networks:
+      - bigdata-network
+    stdin_open: true
+    tty: true
+    environment:
+      - PYSPARK_PYTHON=python3
+      - PYTHONUNBUFFERED=1
+      - JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+    command: bash
+
+networks:
+  bigdata-network:
+    # dış ağ olarak kullanılıyor: bu, önceden oluşturulmuş bir Docker ağına bağlanılacağını belirtir.
+    # eğer bu ağ yoksa, `docker network create bigdata-network` komutuyla oluşturabilirsiniz.
+    external: true

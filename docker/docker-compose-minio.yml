@@ -1,0 +1,80 @@
+version: '3.8'
+
+# Bu dosya MinIO (S3 uyumlu obje depolama) servisini ve bir istemci konteynerini tanımlar.
+# Ödevde örnek verileri MinIO'ya yüklemek veya MinIO üzerinden verileri okumak için kullanılır.
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio-storage
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://minio:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - bigdata-network
+
+  minio-client1:
+    image: minio/mc:latest
+    container_name: minio-client1
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 10;
+      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin123;
+      /usr/bin/mc mb myminio/logs --ignore-existing;
+      /usr/bin/mc mb myminio/analytics --ignore-existing;
+      /usr/bin/mc mb myminio/parquet --ignore-existing;
+      /usr/bin/mc mb myminio/orc --ignore-existing;
+      exit 0;
+      "
+    networks:
+      - bigdata-network
+
+  # To add more MinIO clients, uncomment and modify the sections below:
+  # Ek MinIO istemcileri eklemek isterseniz, aşağıdaki bölümleri yorumdan çıkarıp düzenleyin.
+  # minio-client2:
+  #   image: minio/mc:latest
+  #   container_name: minio-client2
+  #   depends_on:
+  #     - minio
+  #   entrypoint: >
+  #     /bin/sh -c "
+  #     sleep 10;
+  #     /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin123;
+  #     exit 0;
+  #     "
+  #   networks:
+  #     - bigdata-network
+  #
+  # minio-client3:
+  #   image: minio/mc:latest
+  #   container_name: minio-client3
+  #   depends_on:
+  #     - minio
+  #   entrypoint: >
+  #     /bin/sh -c "
+  #     sleep 10;
+  #     /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin123;
+  #     exit 0;
+  #     "
+  #   networks:
+  #     - bigdata-network
+
+volumes:
+  minio_data:
+    driver: local
+
+networks:
+  bigdata-network:
+    external: true
